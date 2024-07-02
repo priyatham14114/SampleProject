@@ -9,12 +9,12 @@ function (Controller,MessageToast,UserInfo) {
     return Controller.extend("com.app.sampleui5.controller.UserView", {
         onInit: async function () {
 
-            // var oUserInfoService = sap.ushell.Container.getServiceAsync("UserInfo"); // Get service is depricated
+            // var oUserInfoService = sap.ushell.Container.getService("UserInfo"); // Get service is depricated
             // var oUser = oUserInfoService.getUser();
 
             var oUser, sFullName, sUserId;
 
-            if (sap.ushell && sap.ushell.Container) {
+            if (sap.ushell.Container) {
                 try {
                     oUser = await sap.ushell.Container.getServiceAsync("UserInfo").then(function(UserInfoService) {
                         return UserInfoService.getUser();
