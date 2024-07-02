@@ -9,8 +9,8 @@ function (Controller,MessageToast,UserInfo) {
     return Controller.extend("com.app.sampleui5.controller.UserView", {
         onInit: function () {
 
-            // var oUserInfoService = sap.ushell.Container.getService("UserInfo");
-            var oUser = sap.ushell.Container.getUser();
+            var oUserInfoService = sap.ushell.Container.getService("UserInfo");
+            var oUser = oUserInfoService.getUser();
 
             // Example: Get the full name of the user
             var sFullName = oUser.getFullName();
