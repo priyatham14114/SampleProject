@@ -7,22 +7,32 @@ function (Controller,MessageToast,UserInfo) {
     "use strict";
 
     return Controller.extend("com.app.sampleui5.controller.UserView", {
-        onInit: function () {
+        onInit: async function () {
 
-            var oUserInfoService = sap.ushell.Container.getService("UserInfo");
-            var oUser = oUserInfoService.getUser();
+            // var oUserInfoService = sap.ushell.Container.getServiceAsync("UserInfo"); // Get service is depricated
+            // var oUser = oUserInfoService.getUser();
 
-            // Example: Get the full name of the user
-            var sFullName = oUser.getFullName();
+            var oUser, sFullName, sUserId;
 
-            // Example: Get the user ID
-            var sUserId = oUser.getId();
+            if (sap.ushell && sap.ushell.Container) {
+                try {
+                    oUser = await sap.ushell.Container.getServiceAsync("UserInfo").then(function(UserInfoService) {
+                        return UserInfoService.getUser();
+                    });
+                    sFullName = oUser.getFullName();
+                    sUserId = oUser.getId();
+                } catch (error) {
+                    console.error("Error fetching user information:", error);
+                }
+            } else {
+                // Mock data for local testing
+                sFullName = "Mock User";
+                sUserId = "MockUser123";
+            }
 
-            // Use the information as needed in your application
             console.log("Full Name: " + sFullName);
             console.log("User ID: " + sUserId);
 
-            // Set the data to the view model (if needed)
             var oModel = new sap.ui.model.json.JSONModel({
                 fullName: sFullName,
                 userId: sUserId
