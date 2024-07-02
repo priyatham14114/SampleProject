@@ -41,7 +41,8 @@
                         press="onProfilePress"
                     /> -->
                    <VBox id="idAdminNameInAdminpageVbox"  > 
-                    <Text id="idAdminNameInAdminPage" text="Admin:" />
+                    <Text id="idAdminNameInAdminPage" text="User:{userModel>/fullName}" />
+                    <Text id="idAdminNameInAdminPa" text="User ID:{userModel>/userId}" />
                     <Link
                         class="profileCard"
                         id="idAdminUserID"
