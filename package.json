@@ -1,0 +1,61 @@
+{
+  "name": "SampleProject",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/cds": "^7",
+    "@sap/cds-hana": "^2",
+    "@sap/xssec": "^3",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^7",
+    "@sap/ux-specification": "^1.120.13",
+    "@sapui5/ts-types": "^1.92.2",
+    "eslint": "^7.32.0",
+    "rimraf": "^5.0.5"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch-sampleproject": "cds watch --open sampleproject/webapp/index.html?sap-ui-xx-viewCache=false",
+    "undeploy": "cf undeploy SampleProject --delete-services --delete-service-keys --delete-service-brokers",
+    "build": "rimraf resources mta_archives && mbt build --mtar archive",
+    "deploy": "cf deploy mta_archives/archive.mtar --retries 1"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "[production]": {
+          "kind": "hana"
+        },
+        "[devlopment]": {
+          "kind": "sql"
+        }
+      },
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "[development]": {
+        "auth": {
+          "kind": "mocked",
+          "users": {
+            "subhash@sap.com": {
+              "password": "hello",
+              "ID": "subhash@sap.com",
+              "roles": [
+                "Admin"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "sapux": [
+    "app/sampleproject"
+  ]
+}
