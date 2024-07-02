@@ -22,7 +22,8 @@ function (Controller,MessageToast,UserInfo) {
                     sFullName = oUser.getFullName();
                     sUserId = oUser.getId();
                 } catch (error) {
-                    console.error("Error fetching user information:", error);
+                    // console.error("Error fetching user information:", error);
+                    MessageToast.show("Error fetching user information:", error)
                 }
             } else {
                 // Mock data for local testing
@@ -30,8 +31,8 @@ function (Controller,MessageToast,UserInfo) {
                 sUserId = "MockUser123";
             }
 
-            console.log("Full Name: " + sFullName);
-            console.log("User ID: " + sUserId);
+            // console.log("Full Name: " + sFullName);
+            // console.log("User ID: " + sUserId);
 
             var oModel = new sap.ui.model.json.JSONModel({
                 fullName: sFullName,
