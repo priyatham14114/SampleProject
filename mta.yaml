@@ -3,129 +3,142 @@ ID: SampleProject
 description: A simple CAP project.
 version: 1.0.0
 modules:
-  - name: SampleProject-srv
-    type: nodejs
-    path: gen/srv
-    requires:
-      - name: SampleProject-db
-      - name: SampleProject-auth
-    provides:
-      - name: srv-api
-        properties:
-          srv-url: ${default-url}
+- name: SampleProject-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: SampleProject-db
+  - name: SampleProject-auth
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    readiness-health-check-http-endpoint: /health
+    readiness-health-check-type: http
+  build-parameters:
+    builder: npm
+- name: SampleProject-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: SampleProject-db
+  parameters:
+    buildpack: nodejs_buildpack
+- name: SampleProject-destination-content
+  type: com.sap.application.content
+  requires:
+  - name: SampleProject-destination-service
     parameters:
-      buildpack: nodejs_buildpack
-      readiness-health-check-http-endpoint: /health
-      readiness-health-check-type: http
-    build-parameters:
-      builder: npm
-  - name: SampleProject-db-deployer
-    type: hdb
-    path: gen/db
-    requires:
-      - name: SampleProject-db
+      content-target: true
+  - name: SampleProject_html_repo_host
     parameters:
-      buildpack: nodejs_buildpack
-  - name: SampleProject-destination-content
-    type: com.sap.application.content
-    requires:
-      - name: SampleProject-destination-service
-        parameters:
-          content-target: true
-      - name: SampleProject_html_repo_host
-        parameters:
-          service-key:
-            name: SampleProject_html_repo_host-key
-      - name: SampleProject-auth
-        parameters:
-          service-key:
-            name: SampleProject-auth-key
+      service-key:
+        name: SampleProject_html_repo_host-key
+  - name: SampleProject-auth
     parameters:
-      content:
+      service-key:
+        name: SampleProject-auth-key
+  parameters:
+    content:
+      instance:
+        destinations:
+        - Name: BooksApp_SampleProject_html_repo_host
+          ServiceInstanceName: SampleProject-html5-app-host-service
+          ServiceKeyName: SampleProject_html_repo_host-key
+          sap.cloud.service: BooksApp
+        - Authentication: OAuth2UserTokenExchange
+          Name: BooksApp_SampleProject_auth
+          ServiceInstanceName: SampleProject-auth
+          ServiceKeyName: SampleProject-auth-key
+          sap.cloud.service: BooksApp
+        existing_destinations_policy: ignore
+  build-parameters:
+    no-source: true
+- name: SampleProject-app-content
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: SampleProject_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - comappsampleproject.zip
+      name: comappsampleproject
+      target-path: resources/
+    - artifacts:
+      - comappsampleui5.zip
+      name: comappsampleui5
+      target-path: resources/
+- name: comappsampleproject
+  type: html5
+  path: app/sampleproject
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+- name: comappsampleui5
+  type: html5
+  path: app/sampleui5
+  build-parameters:
+    build-result: dist
+    builder: custom
+    commands:
+    - npm install
+    - npm run build:cf
+    supported-platforms: []
+resources:
+- name: SampleProject-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+- name: SampleProject-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      tenant-mode: dedicated
+      xsappname: SampleProject-${org}-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: SampleProject-destination-service
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      HTML5Runtime_enabled: true
+      init_data:
         instance:
           destinations:
-            - Name: BooksApp_SampleProject_html_repo_host
-              ServiceInstanceName: SampleProject-html5-app-host-service
-              ServiceKeyName: SampleProject_html_repo_host-key
-              sap.cloud.service: BooksApp
-            - Authentication: OAuth2UserTokenExchange
-              Name: BooksApp_SampleProject_auth
-              ServiceInstanceName: SampleProject-auth
-              ServiceKeyName: SampleProject-auth-key
-              sap.cloud.service: BooksApp
-          existing_destinations_policy: ignore
-    build-parameters:
-      no-source: true
-  - name: SampleProject-app-content
-    type: com.sap.application.content
-    path: .
-    requires:
-      - name: SampleProject_html_repo_host
-        parameters:
-          content-target: true
-    build-parameters:
-      build-result: resources
-      requires:
-        - artifacts:
-            - comappsampleproject.zip
-          name: comappsampleproject
-          target-path: resources/
-  - name: comappsampleproject
-    type: html5
-    path: app/sampleproject
-    build-parameters:
-      build-result: dist
-      builder: custom
-      commands:
-        - npm install
-        - npm run build:cf
-      supported-platforms:
-        []
-resources:
-  - name: SampleProject-db
-    type: com.sap.xs.hdi-container
-    parameters:
-      service: hana
-      service-plan: hdi-shared
-  - name: SampleProject-auth
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        tenant-mode: dedicated
-        xsappname: SampleProject-${org}-${space}
-      path: ./xs-security.json
-      service: xsuaa
-      service-plan: application
-  - name: SampleProject-destination-service
-    type: org.cloudfoundry.managed-service
-    parameters:
-      config:
-        HTML5Runtime_enabled: true
-        init_data:
-          instance:
-            destinations:
-              - Authentication: NoAuthentication
-                Name: ui5
-                ProxyType: Internet
-                Type: HTTP
-                URL: https://ui5.sap.com
-            existing_destinations_policy: update
-        version: 1.0.0
-      service: destination
-      service-name: SampleProject-destination-service
-      service-plan: lite
-  - name: SampleProject_html_repo_host
-    type: org.cloudfoundry.managed-service
-    parameters:
-      service: html5-apps-repo
-      service-name: SampleProject-html5-app-host-service
-      service-plan: app-host
+          - Authentication: NoAuthentication
+            Name: ui5
+            ProxyType: Internet
+            Type: HTTP
+            URL: https://ui5.sap.com
+          existing_destinations_policy: update
+      version: 1.0.0
+    service: destination
+    service-name: SampleProject-destination-service
+    service-plan: lite
+- name: SampleProject_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-name: SampleProject-html5-app-host-service
+    service-plan: app-host
 parameters:
   deploy_mode: html5-repo
   enable-parallel-deployments: true
 build-parameters:
   before-all:
-    - builder: custom
-      commands:
-        - npm ci
-        - npx cds build --production
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production

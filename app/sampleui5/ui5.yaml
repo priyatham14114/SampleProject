@@ -1,0 +1,4 @@
+specVersion: "2.5"
+metadata:
+  name: com.app.sampleui5
+type: application
